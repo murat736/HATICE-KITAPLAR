@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Haticenin Kitapları</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 1200px;
+            overflow: hidden;
+        }
+
+        /* Giriş Ekranı */
+        .login-screen {
+            padding: 60px 40px;
+            text-align: center;
+        }
+
+        .login-screen h1 {
+            color: #667eea;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+
+        .login-screen input {
+            width: 100%;
+            max-width: 400px;
+            padding: 15px 20px;
+            font-size: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            transition: border-color 0.3s;
+        }
+
+        .login-screen input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .login-screen button {
+            padding: 15px 50px;
+            font-size: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .login-screen button:hover {
+            transform: translateY(-2px);
+        }
+
+        .error-message {
+            color: #e74c3c;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        /* Ana Uygulama */
+        .app {
+            display: none;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 1.8em;
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .settings-btn, .logout-btn {
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.2);
+            border: 2px solid white;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .settings-btn:hover, .logout-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .main-content {
+            display: flex;
+            min-height: 600px;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 350px;
+            background: #f8f9fa;
+            border-right: 1px solid #e0e0e0;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .upload-section {
+            margin-bottom: 30px;
+        }
+
+        .upload-section h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .file-input-label {
+            display: block;
+            padding: 15px;
+            background: #667eea;
+            color: white;
+            text-align: center;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .file-input-label:hover {
+            background: #5568d3;
+        }
+
+        .library-section h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .pdf-list {
+            list-style: none;
+        }
+
+        .pdf-item {
+            background: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .pdf-item:hover {
+            border-color: #667eea;
+            transform: translateX(5px);
+        }
+
+        .pdf-item.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .pdf-name {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .pdf-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .download-btn, .delete-btn {
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.3s;
+        }
+
+        .download-btn {
+            background: #27ae60;
+        }
+
+        .download-btn:hover {
+            background: #229954;
+        }
+
+        .delete-btn {
+            background: #e74c3c;
+        }
+
+        .delete-btn:hover {
+            background: #c0392b;
+        }
+
+        .pdf-item.active .download-btn {
+            background: rgba(39, 174, 96, 0.8);
+        }
+
+        .pdf-item.active .download-btn:hover {
+            background: rgba(39, 174, 96, 1);
+        }
+
+        .pdf-item.active .delete-btn {
+            background: rgba(231, 76, 60, 0.8);
+        }
+
+        .pdf-item.active .delete-btn:hover {
+            background: rgba(231, 76, 60, 1);
+        }
+
+        /* Viewer */
+        .viewer {
+            flex: 1;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #999;
+        }
+
+        .empty-state svg {
+            width: 150px;
+            height: 150px;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        #pdf-viewer {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .viewer-container {
+            width: 100%;
+            height: 100%;
+            display: none;
+        }
+
+        .viewer-container.active {
+            display: block;
+        }
+
+        /* Tam Ekran Kontrolleri */
+        .viewer-controls {
+            display: none;
+            margin-bottom: 15px;
+            gap: 10px;
+        }
+
+        .viewer-controls.active {
+            display: flex;
+            justify-content: center;
+        }
+
+        .control-btn {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: background 0.3s;
+        }
+
+        .control-btn:hover {
+            background: #5568d3;
+        }
+
+        .control-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Tam Ekran Modu */
+        .viewer.fullscreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 9999;
+            background: #2c3e50;
+            padding: 0;
+            margin: 0;
+        }
+
+        .viewer.fullscreen .viewer-controls {
+            position: absolute;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10000;
+            background: rgba(0,0,0,0.7);
+            padding: 10px 20px;
+            border-radius: 10px;
+        }
+
+        .viewer.fullscreen .viewer-container {
+            height: 100%;
+        }
+
+        .viewer.fullscreen #pdf-viewer {
+            width: 100%;
+            height: 100%;
+            border-radius: 0;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid #e0e0e0;
+            }
+        }
+
+        /* Modal Stilleri */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            animation: fadeIn 0.3s;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: slideUp 0.3s;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .modal-header h2 {
+            color: #667eea;
+            font-size: 1.8em;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 30px;
+            color: #999;
+            cursor: pointer;
+            line-height: 1;
+            transition: color 0.3s;
+        }
+
+        .close-btn:hover {
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            font-size: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .save-btn {
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .save-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .success-message {
+            color: #27ae60;
+            margin-top: 15px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .error-message {
+            color: #e74c3c;
+            margin-top: 15px;
+            text-align: center;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Giriş Ekranı -->
+        <div class="login-screen" id="loginScreen">
+            <h1>📚 Haticenin Kitapları</h1>
+            <div>
+                <input type="password" id="passwordInput" placeholder="Şifrenizi girin" />
+                <br>
+                <button onclick="login()">Giriş Yap</button>
+                <div class="error-message" id="errorMessage"></div>
+            </div>
+            <p style="margin-top: 30px; color: #666; font-size: 14px;">
+                Varsayılan şifre: <strong>1234</strong><br>
+                (Kodda değiştirebilirsiniz)
+            </p>
+        </div>
+
+        <!-- Ana Uygulama -->
+        <div class="app" id="app">
+            <div class="header">
+                <h1>📚 Haticenin Kitapları</h1>
+                <div class="header-buttons">
+                    <button class="settings-btn" onclick="openSettings()">⚙️ Ayarlar</button>
+                    <button class="logout-btn" onclick="logout()">Çıkış Yap</button>
+                </div>
+            </div>
+            <div class="main-content">
+                <!-- Sidebar -->
+                <div class="sidebar">
+                    <div class="upload-section">
+                        <h2>📤 PDF Yükle</h2>
+                        <div class="file-input-wrapper">
+                            <input type="file" id="pdfFile" accept=".pdf" onchange="uploadPDF()" />
+                            <label for="pdfFile" class="file-input-label">
+                                Dosya Seç
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="library-section">
+                        <h2>📖 Kütüphanem</h2>
+                        <ul class="pdf-list" id="pdfList"></ul>
+                    </div>
+                </div>
+
+                <!-- PDF Görüntüleyici -->
+                <div class="viewer" id="pdfViewer">
+                    <div class="empty-state" id="emptyState">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <polyline points="10 9 9 9 8 9"></polyline>
+                        </svg>
+                        <h2>Henüz PDF yüklenmedi</h2>
+                        <p>Sol taraftan PDF dosyanızı yükleyin</p>
+                    </div>
+                    <div class="viewer-controls" id="viewerControls">
+                        <button class="control-btn" id="downloadPdfBtn" onclick="downloadCurrentPDF()" style="background: #27ae60;">
+                            <span>⬇️</span>
+                            <span>İndir</span>
+                        </button>
+                        <button class="control-btn" id="fullscreenBtn" onclick="toggleFullscreen()">
+                            <span id="fullscreenIcon">⛶</span>
+                            <span id="fullscreenText">Tam Ekran</span>
+                        </button>
+                    </div>
+                    <div class="viewer-container" id="viewerContainer">
+                        <iframe id="pdf-viewer"></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ayarlar Modal -->
+        <div class="modal" id="settingsModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>⚙️ Ayarlar</h2>
+                    <button class="close-btn" onclick="closeSettings()">&times;</button>
+                </div>
+                <form onsubmit="changePassword(event)">
+                    <div class="form-group">
+                        <label>Mevcut Şifre</label>
+                        <input type="password" id="currentPassword" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Yeni Şifre</label>
+                        <input type="password" id="newPassword" required minlength="4" />
+                    </div>
+                    <div class="form-group">
+                        <label>Yeni Şifre (Tekrar)</label>
+                        <input type="password" id="confirmPassword" required minlength="4" />
+                    </div>
+                    <button type="submit" class="save-btn">Şifreyi Değiştir</button>
+                    <div id="settingsMessage"></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Şifre yönetimi - localStorage'da saklanır
+        function getPassword() {
+            return localStorage.getItem('userPassword') || "1234";
+        }
+
+        function setPassword(newPassword) {
+            localStorage.setItem('userPassword', newPassword);
+        }
+
+        // LocalStorage'da PDF'leri sakla
+        let pdfLibrary = JSON.parse(localStorage.getItem('pdfLibrary')) || [];
+        let currentPDF = null;
+
+        // Sayfa yüklendiğinde
+        document.addEventListener('DOMContentLoaded', function() {
+            const isLoggedIn = sessionStorage.getItem('isLoggedIn');
+            if (isLoggedIn === 'true') {
+                showApp();
+            }
+
+            // Enter tuşu ile giriş
+            document.getElementById('passwordInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    login();
+                }
+            });
+
+            loadLibrary();
+        });
+
+        function login() {
+            const password = document.getElementById('passwordInput').value;
+            const errorMessage = document.getElementById('errorMessage');
+
+            if (password === getPassword()) {
+                sessionStorage.setItem('isLoggedIn', 'true');
+                showApp();
+                errorMessage.textContent = '';
+            } else {
+                errorMessage.textContent = 'Hatalı şifre!';
+            }
+        }
+
+        function logout() {
+            sessionStorage.removeItem('isLoggedIn');
+            document.getElementById('loginScreen').style.display = 'block';
+            document.getElementById('app').style.display = 'none';
+            document.getElementById('passwordInput').value = '';
+        }
+
+        function showApp() {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('app').style.display = 'block';
+            loadLibrary();
+        }
+
+        // Ayarlar Modal Fonksiyonları
+        function openSettings() {
+            document.getElementById('settingsModal').classList.add('active');
+            document.getElementById('settingsMessage').textContent = '';
+            document.getElementById('currentPassword').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('confirmPassword').value = '';
+        }
+
+        function closeSettings() {
+            document.getElementById('settingsModal').classList.remove('active');
+        }
+
+        function changePassword(event) {
+            event.preventDefault();
+            
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const messageDiv = document.getElementById('settingsMessage');
+
+            // Mevcut şifreyi kontrol et
+            if (currentPassword !== getPassword()) {
+                messageDiv.className = 'error-message';
+                messageDiv.textContent = 'Mevcut şifre hatalı!';
+                return;
+            }
+
+            // Yeni şifrelerin eşleşmesini kontrol et
+            if (newPassword !== confirmPassword) {
+                messageDiv.className = 'error-message';
+                messageDiv.textContent = 'Yeni şifreler eşleşmiyor!';
+                return;
+            }
+
+            // Şifre uzunluğunu kontrol et
+            if (newPassword.length < 4) {
+                messageDiv.className = 'error-message';
+                messageDiv.textContent = 'Şifre en az 4 karakter olmalı!';
+                return;
+            }
+
+            // Şifreyi kaydet
+            setPassword(newPassword);
+            messageDiv.className = 'success-message';
+            messageDiv.textContent = 'Şifre başarıyla değiştirildi!';
+
+            // 2 saniye sonra modalı kapat
+            setTimeout(() => {
+                closeSettings();
+            }, 2000);
+        }
+
+        // Modal dışına tıklandığında kapat
+        window.onclick = function(event) {
+            const modal = document.getElementById('settingsModal');
+            if (event.target === modal) {
+                closeSettings();
+            }
+        }
+
+        function uploadPDF() {
+            const fileInput = document.getElementById('pdfFile');
+            const file = fileInput.files[0];
+
+            if (file && file.type === 'application/pdf') {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    const pdfData = {
+                        id: Date.now(),
+                        name: file.name,
+                        data: e.target.result,
+                        uploadDate: new Date().toLocaleDateString('tr-TR')
+                    };
+
+                    pdfLibrary.push(pdfData);
+                    localStorage.setItem('pdfLibrary', JSON.stringify(pdfLibrary));
+                    
+                    loadLibrary();
+                    viewPDF(pdfData.id);
+                    
+                    // Input'u temizle
+                    fileInput.value = '';
+                };
+
+                reader.readAsDataURL(file);
+            } else {
+                alert('Lütfen geçerli bir PDF dosyası seçin!');
+            }
+        }
+
+        function loadLibrary() {
+            pdfLibrary = JSON.parse(localStorage.getItem('pdfLibrary')) || [];
+            const pdfList = document.getElementById('pdfList');
+            pdfList.innerHTML = '';
+
+            if (pdfLibrary.length === 0) {
+                pdfList.innerHTML = '<li style="color: #999; padding: 20px; text-align: center;">Henüz PDF yok</li>';
+                return;
+            }
+
+            pdfLibrary.forEach(pdf => {
+                const li = document.createElement('li');
+                li.className = 'pdf-item';
+                if (currentPDF === pdf.id) {
+                    li.classList.add('active');
+                }
+                
+                li.innerHTML = `
+                    <span class="pdf-name" onclick="viewPDF(${pdf.id})">${pdf.name}</span>
+                    <div class="pdf-actions">
+                        <button class="download-btn" onclick="downloadPDF(${pdf.id}, event)" title="İndir">⬇️</button>
+                        <button class="delete-btn" onclick="deletePDF(${pdf.id}, event)" title="Sil">🗑️</button>
+                    </div>
+                `;
+                
+                pdfList.appendChild(li);
+            });
+        }
+
+        function viewPDF(pdfId) {
+            const pdf = pdfLibrary.find(p => p.id === pdfId);
+            if (pdf) {
+                currentPDF = pdfId;
+                document.getElementById('emptyState').style.display = 'none';
+                document.getElementById('viewerContainer').classList.add('active');
+                document.getElementById('viewerControls').classList.add('active');
+                document.getElementById('pdf-viewer').src = pdf.data;
+                
+                loadLibrary(); // Aktif öğeyi güncellemek için
+            }
+        }
+
+        function deletePDF(pdfId, event) {
+            event.stopPropagation();
+            
+            if (confirm('Bu PDF\'i silmek istediğinizden emin misiniz?')) {
+                pdfLibrary = pdfLibrary.filter(p => p.id !== pdfId);
+                localStorage.setItem('pdfLibrary', JSON.stringify(pdfLibrary));
+                
+                if (currentPDF === pdfId) {
+                    currentPDF = null;
+                    document.getElementById('emptyState').style.display = 'block';
+                    document.getElementById('viewerContainer').classList.remove('active');
+                    document.getElementById('viewerControls').classList.remove('active');
+                }
+                
+                loadLibrary();
+            }
+        }
+
+        // PDF İndirme Fonksiyonları
+        function downloadPDF(pdfId, event) {
+            event.stopPropagation();
+            
+            const pdf = pdfLibrary.find(p => p.id === pdfId);
+            if (pdf) {
+                const link = document.createElement('a');
+                link.href = pdf.data;
+                link.download = pdf.name;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
+
+        function downloadCurrentPDF() {
+            if (currentPDF) {
+                const pdf = pdfLibrary.find(p => p.id === currentPDF);
+                if (pdf) {
+                    const link = document.createElement('a');
+                    link.href = pdf.data;
+                    link.download = pdf.name;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                }
+            }
+        }
+
+        // Tam Ekran Fonksiyonu
+        let isFullscreen = false;
+
+        function toggleFullscreen() {
+            const viewer = document.getElementById('pdfViewer');
+            const fullscreenIcon = document.getElementById('fullscreenIcon');
+            const fullscreenText = document.getElementById('fullscreenText');
+
+            if (!isFullscreen) {
+                // Tam ekrana geç
+                if (viewer.requestFullscreen) {
+                    viewer.requestFullscreen();
+                } else if (viewer.webkitRequestFullscreen) {
+                    viewer.webkitRequestFullscreen(); // Safari
+                } else if (viewer.msRequestFullscreen) {
+                    viewer.msRequestFullscreen(); // IE11
+                }
+                
+                viewer.classList.add('fullscreen');
+                fullscreenIcon.textContent = '⛶';
+                fullscreenText.textContent = 'Çıkış';
+                isFullscreen = true;
+            } else {
+                // Tam ekrandan çık
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
+                
+                viewer.classList.remove('fullscreen');
+                fullscreenIcon.textContent = '⛶';
+                fullscreenText.textContent = 'Tam Ekran';
+                isFullscreen = false;
+            }
+        }
+
+        // Tam ekran değişikliklerini dinle (ESC tuşu ile çıkış için)
+        document.addEventListener('fullscreenchange', function() {
+            if (!document.fullscreenElement) {
+                const viewer = document.getElementById('pdfViewer');
+                viewer.classList.remove('fullscreen');
+                document.getElementById('fullscreenIcon').textContent = '⛶';
+                document.getElementById('fullscreenText').textContent = 'Tam Ekran';
+                isFullscreen = false;
+            }
+        });
+
+        // Webkit (Safari) için
+        document.addEventListener('webkitfullscreenchange', function() {
+            if (!document.webkitFullscreenElement) {
+                const viewer = document.getElementById('pdfViewer');
+                viewer.classList.remove('fullscreen');
+                document.getElementById('fullscreenIcon').textContent = '⛶';
+                document.getElementById('fullscreenText').textContent = 'Tam Ekran';
+                isFullscreen = false;
+            }
+        });
+    </script>
+</body>
+</html>
